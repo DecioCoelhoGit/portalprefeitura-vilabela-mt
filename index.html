@@ -1,20 +1,79 @@
 <html>
-<body style="margin:0;font-family:Arial,sans-serif;background:#eef2f7;color:#111827;font-size:22px;"><header style="background:#059669;color:white;padding:40px 20px;text-align:center;position:sticky;top:0;z-index:999;box-shadow:0 4px 10px rgba(0,0,0,.15);">
-<h1 style="margin:0;font-size:52px;">Portal Prefeitura Vila Bela</h1>
-<p style="font-size:28px;">Serviços • Notícias • Transparência • Cidadão</p>
-</header><div style="padding:18px;max-width:1100px;margin:auto;"><div id="contato" style="background:white;padding:20px;margin-bottom:16px;border-radius:14px;">
-<h2 style="font-size:34px;">Contato Real</h2>
-<p style="font-size:24px;">Envie sua mensagem (envio automático ativado).</p><form action="https://formspree.io/f/mayplqdo" method="POST" style="display:flex;flex-direction:column;gap:12px;margin-top:15px;">
-<input name="nome" style="padding:14px;font-size:20px;border-radius:10px;border:1px solid #ccc;" type="text" placeholder="Seu nome" required>
-<input name="email" style="padding:14px;font-size:20px;border-radius:10px;border:1px solid #ccc;" type="email" placeholder="Seu e-mail" required>
-<textarea name="mensagem" style="padding:14px;font-size:20px;border-radius:10px;border:1px solid #ccc;height:140px;" placeholder="Sua mensagem" required></textarea>
-<button type="submit" style="background:#059669;color:white;padding:14px;border:none;border-radius:10px;font-size:22px;">
-Enviar Mensagem
-</button>
-</form></div><div style="background:white;padding:20px;border-radius:14px;">
-<h2 style="font-size:34px;">Sistema</h2>
-<p style="font-size:24px;">Formulário conectado a serviço externo de envio (modo real).</p>
-</div></div><footer style="text-align:center;padding:24px;color:#555;font-size:22px;">
-2026 Prefeitura Vila Bela MT • Portal Premium
-</footer></body>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Portal Prefeitura Vila Bela - Firebase</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head><body style="margin:0;font-family:Arial;background:#eef2f7;font-size:20px;"><div style="background:#059669;color:white;padding:30px;text-align:center;">
+<h1 style="margin:0;font-size:40px;">Portal Prefeitura Vila Bela</h1>
+<p>Firebase Painel Administrativo</p>
+</div><div style="padding:15px;max-width:1000px;margin:auto;"><div id="loginBox" style="background:white;padding:20px;border-radius:12px;margin-bottom:15px;">
+<h2>Login Admin</h2>
+<input id="user" placeholder="Usuário" style="width:100%;padding:12px;margin-bottom:10px;font-size:18px;" />
+<input id="pass" type="password" placeholder="Senha" style="width:100%;padding:12px;margin-bottom:10px;font-size:18px;" />
+<button onclick="login()" style="padding:12px;background:#059669;color:white;border:none;width:100%;font-size:18px;">Entrar</button>
+</div><div id="panel" style="display:none;"><div style="background:white;padding:20px;border-radius:12px;margin-bottom:15px;">
+<h2>Enviar Mensagem (Cidadão)</h2>
+<input id="nome" placeholder="Nome" style="width:100%;padding:10px;margin-bottom:8px;" />
+<input id="email" placeholder="E-mail" style="width:100%;padding:10px;margin-bottom:8px;" />
+<textarea id="msg" placeholder="Mensagem" style="width:100%;padding:10px;height:100px;"></textarea>
+<button onclick="sendMsg()" style="margin-top:10px;padding:12px;width:100%;background:#0f172a;color:white;border:none;">Enviar</button>
+</div><div style="background:white;padding:20px;border-radius:12px;">
+<h2>Mensagens Recebidas</h2>
+<div id="msgs"></div>
+</div></div></div><script>
+
+// Firebase config (substituir depois)
+const firebaseConfig = {
+  apiKey: "SUA_API_KEY",
+  authDomain: "SEU_PROJETO.firebaseapp.com",
+  projectId: "SEU_PROJECT_ID",
+  storageBucket: "SEU_BUCKET",
+  messagingSenderId: "ID",
+  appId: "APP_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let isAdmin = false;
+
+function login(){
+  const u = document.getElementById('user').value;
+  const p = document.getElementById('pass').value;
+
+  if(u === 'admin' && p === '1234'){
+    isAdmin = true;
+    document.getElementById('loginBox').style.display='none';
+    document.getElementById('panel').style.display='block';
+    loadMsgs();
+  } else {
+    alert('Acesso negado');
+  }
+}
+
+function sendMsg(){
+  db.collection('mensagens').add({
+    nome:document.getElementById('nome').value,
+    email:document.getElementById('email').value,
+    mensagem:document.getElementById('msg').value,
+    data:new Date()
+  });
+  alert('Mensagem enviada!');
+}
+
+function loadMsgs(){
+  db.collection('mensagens').orderBy('data','desc').onSnapshot(snap=>{
+    let html='';
+    snap.forEach(doc=>{
+      const d = doc.data();
+      html += `<div style='border-bottom:1px solid #ddd;padding:8px;'>
+      <b>${d.nome}</b><br>${d.email}<br>${d.mensagem}</div>`;
+    });
+    document.getElementById('msgs').innerHTML = html;
+  });
+}
+
+</script></body>
 </html>
