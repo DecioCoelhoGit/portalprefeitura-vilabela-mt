@@ -2,26 +2,23 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Portal Prefeitura Vila Bela - Login Google</title><script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script></head><body style="margin:0;font-family:Arial;background:#eef2f7;font-size:20px;"><div style="background:#059669;color:white;padding:30px;text-align:center;">
-<h1 style="margin:0;font-size:40px;">Portal Prefeitura Vila Bela</h1>
-<p>Login Google Real (Firebase Auth)</p>
-</div><div style="padding:15px;max-width:900px;margin:auto;"><!-- LOGIN --><div id="loginBox" style="background:white;padding:20px;border-radius:12px;margin-bottom:15px;">
-<h2>Entrar no Sistema</h2>
-<p>Use sua conta Google para acessar</p><button onclick="loginGoogle()" style="width:100%;padding:14px;font-size:18px;background:#0f172a;color:white;border:none;border-radius:10px;">
-🔐 Entrar com Google
-</button></div><!-- USER --><div id="userBox" style="display:none;background:white;padding:20px;border-radius:12px;margin-bottom:15px;">
-<h2>Usuário Logado</h2>
-<p id="userInfo"></p>
-<button onclick="logout()" style="width:100%;padding:12px;background:#dc2626;color:white;border:none;border-radius:10px;">
-Sair
+<title>Portal Prefeitura Vila Bela - Dashboard</title><script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js"></script></head><body style="margin:0;font-family:Arial;background:#eef2f7;font-size:18px;"><div style="background:#059669;color:white;padding:30px;text-align:center;">
+<h1 style="margin:0;font-size:38px;">Dashboard Prefeitura Vila Bela</h1>
+<p>Gráficos em tempo real - Gestão Pública</p>
+</div><div style="padding:15px;max-width:1000px;margin:auto;"><!-- LOGIN --><div id="loginBox" style="background:white;padding:20px;border-radius:12px;margin-bottom:15px;">
+<h2>Login Google</h2>
+<button onclick="loginGoogle()" style="width:100%;padding:14px;font-size:18px;background:#111827;color:white;border:none;border-radius:10px;">
+Entrar com Google
 </button>
-</div><!-- SISTEMA --><div id="panel" style="display:none;"><div style="background:white;padding:20px;border-radius:12px;margin-bottom:15px;">
-<h2>Envio de Mensagem</h2>
-<input id="nome" placeholder="Nome" style="width:100%;padding:10px;margin-bottom:8px;" />
-<textarea id="msg" placeholder="Mensagem" style="width:100%;padding:10px;height:100px;"></textarea>
-<button onclick="sendMsg()" style="margin-top:10px;padding:12px;width:100%;background:#059669;color:white;border:none;">
-Enviar
-</button>
+</div><!-- PAINEL --><div id="panel" style="display:none;"><div style="background:white;padding:20px;border-radius:12px;margin-bottom:15px;">
+<h2>Indicadores</h2>
+<p>Total de mensagens: <b id="totalMsgs">0</b></p>
+</div><div style="background:white;padding:20px;border-radius:12px;margin-bottom:15px;">
+<h2>Gráfico de Atendimentos</h2>
+<canvas id="chart" height="120"></canvas>
+</div><div style="background:white;padding:20px;border-radius:12px;">
+<h2>Mensagens</h2>
+<div id="msgs"></div>
 </div></div></div><script>
 
 const firebaseConfig = {
@@ -35,45 +32,59 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// GOOGLE LOGIN
+let chart;
+
 function loginGoogle(){
   const provider = new firebase.auth.GoogleAuthProvider();
 
-  auth.signInWithPopup(provider)
-  .then((result)=>{
-    const user = result.user;
-
+  auth.signInWithPopup(provider).then(()=>{
     document.getElementById('loginBox').style.display='none';
-    document.getElementById('userBox').style.display='block';
     document.getElementById('panel').style.display='block';
-
-    document.getElementById('userInfo').innerHTML = 
-      "Nome: " + user.displayName + "<br>Email: " + user.email;
-  })
-  .catch(error=>{
-    alert("Erro no login: " + error.message);
+    loadData();
   });
 }
 
-// LOGOUT
-function logout(){
-  auth.signOut().then(()=>{
-    location.reload();
+function loadData(){
+
+  db.collection('mensagens').onSnapshot(snap=>{
+
+    let count = snap.size;
+    document.getElementById('totalMsgs').innerText = count;
+
+    let html = '';
+    snap.forEach(doc=>{
+      let d = doc.data();
+      html += `<div style='border-bottom:1px solid #ddd;padding:8px'>
+      <b>${d.nome || 'Sem nome'}</b><br>
+      ${d.mensagem || ''}</div>`;
+    });
+    document.getElementById('msgs').innerHTML = html;
+
+    renderChart(count);
   });
 }
 
-// ENVIAR MENSAGEM
-function sendMsg(){
-  const user = auth.currentUser;
+function renderChart(total){
 
-  db.collection("mensagens").add({
-    nome: user.displayName,
-    email: user.email,
-    mensagem: document.getElementById('msg').value,
-    data: new Date()
+  const ctx = document.getElementById('chart');
+
+  if(chart) chart.destroy();
+
+  chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Mensagens'],
+      datasets: [{
+        label: 'Total',
+        data: [total],
+        backgroundColor: '#059669'
+      }]
+    },
+    options: {
+      responsive:true,
+      plugins:{legend:{display:false}}
+    }
   });
-
-  alert("Mensagem enviada!");
 }
 
 </script></body>
