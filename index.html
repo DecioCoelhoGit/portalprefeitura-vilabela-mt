@@ -2,77 +2,78 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Portal Prefeitura Vila Bela - Firebase</title>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-</head><body style="margin:0;font-family:Arial;background:#eef2f7;font-size:20px;"><div style="background:#059669;color:white;padding:30px;text-align:center;">
+<title>Portal Prefeitura Vila Bela - Login Google</title><script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script></head><body style="margin:0;font-family:Arial;background:#eef2f7;font-size:20px;"><div style="background:#059669;color:white;padding:30px;text-align:center;">
 <h1 style="margin:0;font-size:40px;">Portal Prefeitura Vila Bela</h1>
-<p>Firebase Painel Administrativo</p>
-</div><div style="padding:15px;max-width:1000px;margin:auto;"><div id="loginBox" style="background:white;padding:20px;border-radius:12px;margin-bottom:15px;">
-<h2>Login Admin</h2>
-<input id="user" placeholder="Usuário" style="width:100%;padding:12px;margin-bottom:10px;font-size:18px;" />
-<input id="pass" type="password" placeholder="Senha" style="width:100%;padding:12px;margin-bottom:10px;font-size:18px;" />
-<button onclick="login()" style="padding:12px;background:#059669;color:white;border:none;width:100%;font-size:18px;">Entrar</button>
-</div><div id="panel" style="display:none;"><div style="background:white;padding:20px;border-radius:12px;margin-bottom:15px;">
-<h2>Enviar Mensagem (Cidadão)</h2>
+<p>Login Google Real (Firebase Auth)</p>
+</div><div style="padding:15px;max-width:900px;margin:auto;"><!-- LOGIN --><div id="loginBox" style="background:white;padding:20px;border-radius:12px;margin-bottom:15px;">
+<h2>Entrar no Sistema</h2>
+<p>Use sua conta Google para acessar</p><button onclick="loginGoogle()" style="width:100%;padding:14px;font-size:18px;background:#0f172a;color:white;border:none;border-radius:10px;">
+🔐 Entrar com Google
+</button></div><!-- USER --><div id="userBox" style="display:none;background:white;padding:20px;border-radius:12px;margin-bottom:15px;">
+<h2>Usuário Logado</h2>
+<p id="userInfo"></p>
+<button onclick="logout()" style="width:100%;padding:12px;background:#dc2626;color:white;border:none;border-radius:10px;">
+Sair
+</button>
+</div><!-- SISTEMA --><div id="panel" style="display:none;"><div style="background:white;padding:20px;border-radius:12px;margin-bottom:15px;">
+<h2>Envio de Mensagem</h2>
 <input id="nome" placeholder="Nome" style="width:100%;padding:10px;margin-bottom:8px;" />
-<input id="email" placeholder="E-mail" style="width:100%;padding:10px;margin-bottom:8px;" />
 <textarea id="msg" placeholder="Mensagem" style="width:100%;padding:10px;height:100px;"></textarea>
-<button onclick="sendMsg()" style="margin-top:10px;padding:12px;width:100%;background:#0f172a;color:white;border:none;">Enviar</button>
-</div><div style="background:white;padding:20px;border-radius:12px;">
-<h2>Mensagens Recebidas</h2>
-<div id="msgs"></div>
+<button onclick="sendMsg()" style="margin-top:10px;padding:12px;width:100%;background:#059669;color:white;border:none;">
+Enviar
+</button>
 </div></div></div><script>
 
-// Firebase config (substituir depois)
 const firebaseConfig = {
   apiKey: "SUA_API_KEY",
   authDomain: "SEU_PROJETO.firebaseapp.com",
   projectId: "SEU_PROJECT_ID",
-  storageBucket: "SEU_BUCKET",
-  messagingSenderId: "ID",
-  appId: "APP_ID"
+  appId: "SEU_APP_ID"
 };
 
 firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 const db = firebase.firestore();
 
-let isAdmin = false;
+// GOOGLE LOGIN
+function loginGoogle(){
+  const provider = new firebase.auth.GoogleAuthProvider();
 
-function login(){
-  const u = document.getElementById('user').value;
-  const p = document.getElementById('pass').value;
+  auth.signInWithPopup(provider)
+  .then((result)=>{
+    const user = result.user;
 
-  if(u === 'admin' && p === '1234'){
-    isAdmin = true;
     document.getElementById('loginBox').style.display='none';
+    document.getElementById('userBox').style.display='block';
     document.getElementById('panel').style.display='block';
-    loadMsgs();
-  } else {
-    alert('Acesso negado');
-  }
+
+    document.getElementById('userInfo').innerHTML = 
+      "Nome: " + user.displayName + "<br>Email: " + user.email;
+  })
+  .catch(error=>{
+    alert("Erro no login: " + error.message);
+  });
 }
 
+// LOGOUT
+function logout(){
+  auth.signOut().then(()=>{
+    location.reload();
+  });
+}
+
+// ENVIAR MENSAGEM
 function sendMsg(){
-  db.collection('mensagens').add({
-    nome:document.getElementById('nome').value,
-    email:document.getElementById('email').value,
-    mensagem:document.getElementById('msg').value,
-    data:new Date()
-  });
-  alert('Mensagem enviada!');
-}
+  const user = auth.currentUser;
 
-function loadMsgs(){
-  db.collection('mensagens').orderBy('data','desc').onSnapshot(snap=>{
-    let html='';
-    snap.forEach(doc=>{
-      const d = doc.data();
-      html += `<div style='border-bottom:1px solid #ddd;padding:8px;'>
-      <b>${d.nome}</b><br>${d.email}<br>${d.mensagem}</div>`;
-    });
-    document.getElementById('msgs').innerHTML = html;
+  db.collection("mensagens").add({
+    nome: user.displayName,
+    email: user.email,
+    mensagem: document.getElementById('msg').value,
+    data: new Date()
   });
+
+  alert("Mensagem enviada!");
 }
 
 </script></body>
