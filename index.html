@@ -1,91 +1,14 @@
-<html>
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Portal Prefeitura Vila Bela - Dashboard</title><script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js"></script></head><body style="margin:0;font-family:Arial;background:#eef2f7;font-size:18px;"><div style="background:#059669;color:white;padding:30px;text-align:center;">
-<h1 style="margin:0;font-size:38px;">Dashboard Prefeitura Vila Bela</h1>
-<p>Gráficos em tempo real - Gestão Pública</p>
-</div><div style="padding:15px;max-width:1000px;margin:auto;"><!-- LOGIN --><div id="loginBox" style="background:white;padding:20px;border-radius:12px;margin-bottom:15px;">
-<h2>Login Google</h2>
-<button onclick="loginGoogle()" style="width:100%;padding:14px;font-size:18px;background:#111827;color:white;border:none;border-radius:10px;">
-Entrar com Google
-</button>
-</div><!-- PAINEL --><div id="panel" style="display:none;"><div style="background:white;padding:20px;border-radius:12px;margin-bottom:15px;">
-<h2>Indicadores</h2>
-<p>Total de mensagens: <b id="totalMsgs">0</b></p>
-</div><div style="background:white;padding:20px;border-radius:12px;margin-bottom:15px;">
-<h2>Gráfico de Atendimentos</h2>
-<canvas id="chart" height="120"></canvas>
-</div><div style="background:white;padding:20px;border-radius:12px;">
-<h2>Mensagens</h2>
-<div id="msgs"></div>
-</div></div></div><script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 
 const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
-  authDomain: "SEU_PROJETO.firebaseapp.com",
-  projectId: "SEU_PROJECT_ID",
-  appId: "SEU_APP_ID"
+  apiKey: "AIzaSyA0gzcURBN0U4oTwQVOav1Mmq3U5KZY-cc",
+  authDomain: "portal-vilabela-mt.firebaseapp.com",
+  projectId: "portal-vilabela-mt",
+  storageBucket: "portal-vilabela-mt.appspot.com",
+  messagingSenderId: "560298903980",
+  appId: "1:560298903980:web:9f8e4e6f7a6b5c4d3e2a1b"
 };
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-let chart;
-
-function loginGoogle(){
-  const provider = new firebase.auth.GoogleAuthProvider();
-
-  auth.signInWithPopup(provider).then(()=>{
-    document.getElementById('loginBox').style.display='none';
-    document.getElementById('panel').style.display='block';
-    loadData();
-  });
-}
-
-function loadData(){
-
-  db.collection('mensagens').onSnapshot(snap=>{
-
-    let count = snap.size;
-    document.getElementById('totalMsgs').innerText = count;
-
-    let html = '';
-    snap.forEach(doc=>{
-      let d = doc.data();
-      html += `<div style='border-bottom:1px solid #ddd;padding:8px'>
-      <b>${d.nome || 'Sem nome'}</b><br>
-      ${d.mensagem || ''}</div>`;
-    });
-    document.getElementById('msgs').innerHTML = html;
-
-    renderChart(count);
-  });
-}
-
-function renderChart(total){
-
-  const ctx = document.getElementById('chart');
-
-  if(chart) chart.destroy();
-
-  chart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['Mensagens'],
-      datasets: [{
-        label: 'Total',
-        data: [total],
-        backgroundColor: '#059669'
-      }]
-    },
-    options: {
-      responsive:true,
-      plugins:{legend:{display:false}}
-    }
-  });
-}
-
-</script></body>
-</html>
+const app = initializeApp(firebaseConfig);
+</script>
