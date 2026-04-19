@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Portal Prefeitura Vila Bela MT</title>
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#f2f4f8;color:#222}header{position:sticky;top:0;background:#0b7a53;color:#fff;padding:20px;text-align:center}nav a{color:#fff;margin:0 8px;text-decoration:none;font-weight:bold}.wrap{max-width:900px;margin:auto;padding:16px}.card{background:#fff;border-radius:14px;padding:18px;margin:14px 0;box-shadow:0 2px 10px rgba(0,0,0,.08)}input,textarea{width:100%;padding:12px;margin:8px 0;border:1px solid #ccc;border-radius:10px}button{background:#0b7a53;color:#fff;border:0;padding:12px 18px;border-radius:10px;font-weight:bold}#msg{margin-top:10px;font-weight:bold}
+body{margin:0;font-family:Arial,sans-serif;background:#f2f4f8;color:#222}header{position:sticky;top:0;background:#0b7a53;color:#fff;padding:20px;text-align:center}nav a{color:#fff;margin:0 8px;text-decoration:none;font-weight:bold}.wrap{max-width:900px;margin:auto;padding:16px}.card{background:#fff;border-radius:14px;padding:18px;margin:14px 0;box-shadow:0 2px 10px rgba(0,0,0,.08)}input,textarea{width:100%;padding:12px;margin:8px 0;border:1px solid #ccc;border-radius:10px}button{background:#0b7a53;color:#fff;border:0;padding:12px 18px;border-radius:10px;font-weight:bold;cursor:pointer}#msg{margin-top:10px;font-weight:bold;min-height:24px}
 </style>
 </head>
 <body>
@@ -13,14 +13,19 @@ body{margin:0;font-family:Arial,sans-serif;background:#f2f4f8;color:#222}header{
 <div class='card' id='serv'><h2>Serviços</h2><p>IPTU, protocolos, atendimento e solicitações digitais.</p></div>
 <div class='card' id='not'><h2>Notícias</h2><p>Comunicados oficiais e ações municipais.</p></div>
 <div class='card' id='trans'><h2>Transparência</h2><p>Relatórios, dados públicos e prestação de contas.</p></div>
-<div class='card' id='cont'><h2>Fale Conosco</h2><input id='nome' placeholder='Seu nome'><input id='email' placeholder='Seu e-mail'><textarea id='mensagem' placeholder='Digite sua mensagem'></textarea><button onclick='salvarContato()'>Enviar</button><div id='msg'></div></div>
+<div class='card' id='cont'><h2>Fale Conosco</h2><input id='nome' placeholder='Seu nome'><input id='email' placeholder='Seu e-mail'><textarea id='mensagem' placeholder='Digite sua mensagem'></textarea><button onclick='salvarContato()' id='btnEnviar'>Enviar</button><div id='msg'></div></div>
 </div>
 <script type='module'>
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
-import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
-const firebaseConfig={apiKey:'AIzaSyA0gzcURBN0U4oTwQVOav1Mmq3U5KZY-cc',authDomain:'portal-vilabela-mt.firebaseapp.com',projectId:'portal-vilabela-mt',storageBucket:'portal-vilabela-mt.appspot.com',messagingSenderId:'560298903980',appId:'1:560298903980:web:9f8e4e6f7a6b5c4d3e2a1b'};
-const app=initializeApp(firebaseConfig);const db=getFirestore(app);
-window.salvarContato=async function(){const nome=document.getElementById('nome').value;const email=document.getElementById('email').value;const mensagem=document.getElementById('mensagem').value;try{await addDoc(collection(db,'contatos'),{nome,email,mensagem,data:new Date().toISOString()});document.getElementById('msg').innerText='Mensagem enviada com sucesso!';}catch(e){document.getElementById('msg').innerText='Erro ao enviar.';}}
-</script>
+import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';const firebaseConfig={apiKey:'AIzaSyA0gzcURBN0U4oTwQVOav1Mmq3U5KZY-cc',authDomain:'portal-vilabela-mt.firebaseapp.com',projectId:'portal-vilabela-mt',storageBucket:'portal-vilabela-mt.appspot.com',messagingSenderId:'560298903980',appId:'1:560298903980:web:9f8e4e6f7a6b5c4d3e2a1b'};
+
+const app=initializeApp(firebaseConfig); const db=getFirestore(app); console.log('Firebase conectado');
+
+window.salvarContato=async function(){ const nome=document.getElementById('nome').value.trim(); const email=document.getElementById('email').value.trim(); const mensagem=document.getElementById('mensagem').value.trim(); const msgBox=document.getElementById('msg'); const btn=document.getElementById('btnEnviar');
+
+msgBox.innerText=''; if(!nome || !email || !mensagem){msgBox.innerText='Preencha todos os campos.';return;}
+
+btn.disabled=true; btn.innerText='Enviando...'; try{ await addDoc(collection(db,'contatos'),{nome,email,mensagem,data:serverTimestamp(),status:'novo'}); msgBox.innerText='Mensagem enviada com sucesso!'; document.getElementById('nome').value=''; document.getElementById('email').value=''; document.getElementById('mensagem').value=''; }catch(e){ console.error(e); msgBox.innerText='Erro: '+e.message; } btn.disabled=false; btn.innerText='Enviar'; } </script>
+
 </body>
 </html>
