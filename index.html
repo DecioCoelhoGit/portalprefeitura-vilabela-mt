@@ -1,34 +1,39 @@
 <!DOCTYPE html><html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel Admin CRUD - Vila Bela</title>
+<title>Painel Admin Google - Vila Bela</title>
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#f2f4f8;color:#222}header{background:#0b7a53;color:#fff;padding:20px;text-align:center}.wrap{max-width:1100px;margin:auto;padding:16px}.card{background:#fff;border-radius:14px;padding:18px;margin:14px 0;box-shadow:0 2px 10px rgba(0,0,0,.08)}input,textarea,select{width:100%;padding:10px;margin:6px 0;border:1px solid #ccc;border-radius:8px}button{background:#0b7a53;color:#fff;border:0;padding:10px 14px;border-radius:8px;cursor:pointer;margin:4px}.danger{background:#dc2626}.row{display:grid;grid-template-columns:1fr;gap:10px}.item{border:1px solid #ddd;border-radius:10px;padding:12px;margin:8px 0}
+body{margin:0;font-family:Arial,sans-serif;background:#f2f4f8;color:#222}header{background:#0b7a53;color:#fff;padding:20px;text-align:center}.wrap{max-width:1100px;margin:auto;padding:16px}.card{background:#fff;border-radius:14px;padding:18px;margin:14px 0;box-shadow:0 2px 10px rgba(0,0,0,.08)}button,select{background:#0b7a53;color:#fff;border:0;padding:10px 14px;border-radius:8px;cursor:pointer;margin:4px}.danger{background:#dc2626}.item{border:1px solid #ddd;border-radius:10px;padding:12px;margin:8px 0}
 </style>
 </head>
 <body>
-<header><h1>Painel Admin CRUD</h1><p>Portal Prefeitura Vila Bela MT</p></header>
+<header><h1>Painel Admin Google</h1><p>Portal Prefeitura Vila Bela MT</p></header>
 <div class='wrap'>
-<div class='card'>
-<h2>Login Administrativo</h2>
-<input id='senha' type='password' placeholder='Senha administrativa'>
-<button onclick='entrar()'>Entrar</button>
+<div class='card' id='loginBox'>
+<h2>Acesso Administrativo</h2>
+<p>Entrar com conta Google autorizada</p>
+<button onclick='loginGoogle()'>Entrar com Google</button>
 <div id='loginMsg'></div>
 </div>
 <div class='card' id='painel' style='display:none'>
 <h2>Mensagens Recebidas</h2>
+<p id='userInfo'></p>
 <div id='lista'></div>
+<button onclick='logout()'>Sair</button>
 </div>
 </div>
 <script type='module'>
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
 import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
 const firebaseConfig={apiKey:'AIzaSyA0gzcURBN0U4oTwQVOav1Mmq3U5KZY-cc',authDomain:'portal-vilabela-mt.firebaseapp.com',projectId:'portal-vilabela-mt',storageBucket:'portal-vilabela-mt.appspot.com',messagingSenderId:'560298903980',appId:'1:560298903980:web:9f8e4e6f7a6b5c4d3e2a1b'};
-const app=initializeApp(firebaseConfig); const db=getFirestore(app);
-window.entrar=function(){const s=document.getElementById('senha').value;if(s==='1234'){document.getElementById('painel').style.display='block';document.getElementById('loginMsg').innerText='Acesso liberado';carregar();}else{document.getElementById('loginMsg').innerText='Senha incorreta';}}
+const app=initializeApp(firebaseConfig); const auth=getAuth(app); const db=getFirestore(app);
+const emailsPermitidos=['antoniodecioferreiracoelho@gmail.com'];
+window.loginGoogle=async function(){try{const provider=new GoogleAuthProvider();const result=await signInWithPopup(auth,provider);const user=result.user;if(!emailsPermitidos.includes(user.email)){await signOut(auth);document.getElementById('loginMsg').innerText='E-mail sem permissão';return;}document.getElementById('loginBox').style.display='none';document.getElementById('painel').style.display='block';document.getElementById('userInfo').innerText='Logado: '+user.email;carregar();}catch(e){document.getElementById('loginMsg').innerText='Erro: '+e.message;}}
 function carregar(){const q=query(collection(db,'contatos'),orderBy('data','desc'));onSnapshot(q,(snap)=>{let html='';snap.forEach((d)=>{const x=d.data();html+=`<div class='item'><b>${x.nome||''}</b><br>${x.email||''}<br>${x.mensagem||''}<br><small>Status: ${x.status||'novo'}</small><br><select onchange="alterarStatus('${d.id}',this.value)"><option value='novo'>novo</option><option value='em análise'>em análise</option><option value='resolvido'>resolvido</option></select><button class='danger' onclick="excluir('${d.id}')">Excluir</button></div>`});document.getElementById('lista').innerHTML=html;});}
 window.alterarStatus=async function(id,status){await updateDoc(doc(db,'contatos',id),{status});}
 window.excluir=async function(id){if(confirm('Excluir registro?')) await deleteDoc(doc(db,'contatos',id));}
+window.logout=async function(){await signOut(auth);location.reload();}
 </script>
 </body>
 </html>
