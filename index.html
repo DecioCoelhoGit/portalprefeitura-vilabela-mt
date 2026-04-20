@@ -1,34 +1,31 @@
 <!DOCTYPE html><html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Executivo - Vila Bela</title>
+<title>Portal Prefeitura Vila Bela MT - Sistema Completo</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#eef2f7;color:#222}header{background:#0b7a53;color:#fff;padding:20px;text-align:center}.wrap{max-width:1200px;margin:auto;padding:16px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,.08)}canvas{max-width:100%}
-</style>
-</head>
-<body>
-<header><h1>Dashboard Executivo</h1><p>Portal Prefeitura Vila Bela MT</p></header>
+body{margin:0;font-family:Arial,sans-serif;background:#eef2f7;color:#222}header{background:#0b7a53;color:#fff;padding:20px;text-align:center}.wrap{max-width:1200px;margin:auto;padding:16px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,.08);margin:14px 0}input,textarea,select{width:100%;padding:10px;margin:6px 0;border:1px solid #ccc;border-radius:8px}button{background:#0b7a53;color:#fff;border:0;padding:10px 14px;border-radius:8px;cursor:pointer;margin:4px}.danger{background:#dc2626}.item{border:1px solid #ddd;border-radius:10px;padding:12px;margin:8px 0}
+</style></head><body>
+<header><h1>Portal Prefeitura Vila Bela MT</h1><p>Sistema Completo Integrado</p></header>
 <div class='wrap'>
+<div class='card'><h2>Fale Conosco</h2><input id='nome' placeholder='Seu nome'><input id='email' placeholder='Seu e-mail'><textarea id='mensagem' placeholder='Digite sua mensagem'></textarea><button onclick='salvarContato()' id='btnEnviar'>Enviar</button><div id='msg'></div></div>
 <div class='grid'>
-<div class='card'><h3>Total de Contatos</h3><h1 id='total'>0</h1></div>
+<div class='card'><h3>Total</h3><h1 id='total'>0</h1></div>
 <div class='card'><h3>Novos</h3><h1 id='novos'>0</h1></div>
-<div class='card'><h3>Em Análise</h3><h1 id='analise'>0</h1></div>
+<div class='card'><h3>Em análise</h3><h1 id='analise'>0</h1></div>
 <div class='card'><h3>Resolvidos</h3><h1 id='resolvidos'>0</h1></div>
 </div>
-<div class='card'><h3>Status das Demandas</h3><canvas id='graficoStatus'></canvas></div>
-<div class='card'><h3>Evolução de Registros</h3><canvas id='graficoTempo'></canvas></div>
+<div class='card'><canvas id='grafico'></canvas></div>
+<div class='card'><h2>Painel Admin</h2><div id='lista'></div></div>
 </div>
 <script type='module'>
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
-import { getFirestore, collection, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
-const firebaseConfig={apiKey:'AIzaSyA0gzcURBN0U4oTwQVOav1Mmq3U5KZY-cc',authDomain:'portal-vilabela-mt.firebaseapp.com',projectId:'portal-vilabela-mt',storageBucket:'portal-vilabela-mt.appspot.com',messagingSenderId:'560298903980',appId:'1:560298903980:web:9f8e4e6f7a6b5c4d3e2a1b'};
-const app=initializeApp(firebaseConfig); const db=getFirestore(app);
-let c1,c2;
-onSnapshot(collection(db,'contatos'),(snap)=>{let total=snap.size,novos=0,analise=0,resolvidos=0;let porDia={};snap.forEach(doc=>{const d=doc.data();const st=d.status||'novo';if(st==='novo')novos++;else if(st==='em análise')analise++;else if(st==='resolvido')resolvidos++;const dia=(d.data&&d.data.seconds)?new Date(d.data.seconds*1000).toLocaleDateString('pt-BR'):'Sem data';porDia[dia]=(porDia[dia]||0)+1;});document.getElementById('total').innerText=total;document.getElementById('novos').innerText=novos;document.getElementById('analise').innerText=analise;document.getElementById('resolvidos').innerText=resolvidos;
-if(c1)c1.destroy(); c1=new Chart(document.getElementById('graficoStatus'),{type:'doughnut',data:{labels:['Novos','Em análise','Resolvidos'],datasets:[{data:[novos,analise,resolvidos]}]}});
-if(c2)c2.destroy(); c2=new Chart(document.getElementById('graficoTempo'),{type:'bar',data:{labels:Object.keys(porDia),datasets:[{label:'Registros',data:Object.values(porDia)}]}});
-});
-</script>
-</body>
-</html>
+import { getFirestore, collection, addDoc, serverTimestamp, onSnapshot, doc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
+const firebaseConfig={apiKey:'AIzaSyBSXXHj9RVPUA73fBIyS91c-PXoRhnwZT0',authDomain:'portal-vilabela-mt-3e11e.firebaseapp.com',projectId:'portal-vilabela-mt-3e11e',storageBucket:'portal-vilabela-mt-3e11e.firebasestorage.app',messagingSenderId:'953992010471',appId:'1:953992010471:web:8a1980a0e7bd19b2092042'};
+const app=initializeApp(firebaseConfig); const db=getFirestore(app); let chart;
+window.salvarContato=async function(){const nome=nomeEl.value.trim(),email=emailEl.value.trim(),mensagem=mensagemEl.value.trim();msg.innerText='';if(!nome||!email||!mensagem){msg.innerText='Preencha todos os campos';return;}try{await addDoc(collection(db,'contatos'),{nome,email,mensagem,status:'novo',data:serverTimestamp()});msg.innerText='Mensagem enviada com sucesso!';nomeEl.value='';emailEl.value='';mensagemEl.value='';}catch(e){msg.innerText='Erro: '+e.message;}}
+const nomeEl=document.getElementById('nome'),emailEl=document.getElementById('email'),mensagemEl=document.getElementById('mensagem'),msg=document.getElementById('msg');
+onSnapshot(collection(db,'contatos'),(snap)=>{let total=snap.size,novos=0,analise=0,resolvidos=0,html='';snap.forEach((r)=>{const d=r.data();if((d.status||'novo')==='novo')novos++;else if(d.status==='em análise')analise++;else if(d.status==='resolvido')resolvidos++;html+=`<div class='item'><b>${d.nome||''}</b><br>${d.email||''}<br>${d.mensagem||''}<br><select onchange="alterar('${r.id}',this.value)"><option ${d.status==='novo'?'selected':''}>novo</option><option ${d.status==='em análise'?'selected':''}>em análise</option><option ${d.status==='resolvido'?'selected':''}>resolvido</option></select><button class='danger' onclick="excluir('${r.id}')">Excluir</button></div>`});lista.innerHTML=html;totalEl.innerText=total;novosEl.innerText=novos;analiseEl.innerText=analise;resolvidosEl.innerText=resolvidos;if(chart)chart.destroy();chart=new Chart(document.getElementById('grafico'),{type:'bar',data:{labels:['Novos','Em análise','Resolvidos'],datasets:[{data:[novos,analise,resolvidos]}]}});});
+window.alterar=async(id,status)=>await updateDoc(doc(db,'contatos',id),{status}); window.excluir=async(id)=>await deleteDoc(doc(db,'contatos',id));
+const lista=document.getElementById('lista'),totalEl=document.getElementById('total'),novosEl=document.getElementById('novos'),analiseEl=document.getElementById('analise'),resolvidosEl=document.getElementById('resolvidos');
+</script></body></html>
