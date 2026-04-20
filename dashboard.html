@@ -1,1 +1,26 @@
-
+<!DOCTYPE html><html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Executivo - Portal Prefeitura Vila Bela MT</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#eef2f7;color:#222}header{background:#0b7a53;color:#fff;padding:24px;text-align:center}.wrap{max-width:1100px;margin:auto;padding:16px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,.08);margin:14px 0}canvas{max-width:100%}
+</style></head><body>
+<header><h1>Dashboard Executivo</h1><p>Portal Prefeitura Vila Bela MT</p></header>
+<div class='wrap'>
+<div class='grid'>
+<div class='card'><h3>Total</h3><h1 id='total'>0</h1></div>
+<div class='card'><h3>Novos</h3><h1 id='novos'>0</h1></div>
+<div class='card'><h3>Em análise</h3><h1 id='analise'>0</h1></div>
+<div class='card'><h3>Resolvidos</h3><h1 id='resolvidos'>0</h1></div>
+</div>
+<div class='card'><canvas id='grafico'></canvas></div>
+</div>
+<script type='module'>
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
+import { getFirestore, collection, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
+const firebaseConfig={apiKey:'AIzaSyBSXXHj9RVPUA73fBIyS91c-PXoRhnwZT0',authDomain:'portal-vilabela-mt-3e11e.firebaseapp.com',projectId:'portal-vilabela-mt-3e11e',storageBucket:'portal-vilabela-mt-3e11e.firebasestorage.app',messagingSenderId:'953992010471',appId:'1:953992010471:web:8a1980a0e7bd19b2092042'};
+const app=initializeApp(firebaseConfig); const db=getFirestore(app); let chart;
+onSnapshot(collection(db,'contatos'),(snap)=>{let total=snap.size,novos=0,analise=0,resolvidos=0;snap.forEach((r)=>{const d=r.data();if((d.status||'novo')==='novo')novos++;else if(d.status==='em análise')analise++;else if(d.status==='resolvido')resolvidos++;});totalEl.innerText=total;novosEl.innerText=novos;analiseEl.innerText=analise;resolvidosEl.innerText=resolvidos;if(chart)chart.destroy();chart=new Chart(document.getElementById('grafico'),{type:'doughnut',data:{labels:['Novos','Em análise','Resolvidos'],datasets:[{data:[novos,analise,resolvidos]}]}});});
+const totalEl=document.getElementById('total'),novosEl=document.getElementById('novos'),analiseEl=document.getElementById('analise'),resolvidosEl=document.getElementById('resolvidos');
+</script></body></html>
