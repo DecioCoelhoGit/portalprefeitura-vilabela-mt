@@ -1,1 +1,161 @@
-<!DOCTYPE html><html lang='pt-BR'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Diagnóstico Firebase</title><style>body{font-family:Arial;padding:15px;background:#f4f6f8}input,textarea,button{width:100%;padding:10px;margin:6px 0}button{background:#0b7a53;color:#fff;border:0}#log{background:#fff;padding:10px;border-radius:8px;white-space:pre-line}</style></head><body><h2>Diagnóstico Portal Vila Bela</h2><input id='nome' placeholder='Nome'><input id='email' placeholder='E-mail'><textarea id='mensagem'></textarea><button id='btn'>Testar Envio</button><div id='log'>Iniciando...</div><script type='module'>const log=t=>document.getElementById('log').innerText+=`\n${t}`;try{log('Carregando SDK...');import('https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js').then(async appMod=>{const fs=await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js');log('SDK OK');const cfg={apiKey:'AIzaSyBSXXHj9RVPUA73fBIyS91c-PXoRhnwZT0',authDomain:'portal-vilabela-mt-3e11e.firebaseapp.com',projectId:'portal-vilabela-mt-3e11e',storageBucket:'portal-vilabela-mt-3e11e.firebasestorage.app',messagingSenderId:'953992010471',appId:'1:953992010471:web:8a1980a0e7bd19b2092042'};const app=appMod.initializeApp(cfg);const db=fs.getFirestore(app);log('Firebase iniciado');document.getElementById('btn').onclick=async()=>{log('Tentando salvar...');try{await fs.addDoc(fs.collection(db,'contatos'),{nome:nome.value,email:email.value,mensagem:mensagem.value,data:fs.serverTimestamp()});log('SALVO COM SUCESSO');}catch(e){log('ERRO: '+e.message);}}}).catch(e=>log('Erro SDK: '+e.message));}catch(e){log('Erro geral: '+e.message);}</script></body></html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Portal Prefeitura Vila Bela MT</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#f4f6f9;color:#222}
+header{background:#0d47a1;color:#fff;padding:18px;text-align:center;font-size:26px;font-weight:bold;position:sticky;top:0}
+nav{background:#1565c0;padding:12px;text-align:center}
+nav a{color:#fff;text-decoration:none;margin:0 12px;font-weight:bold}
+section{padding:30px;max-width:900px;margin:auto}
+.card{background:#fff;padding:25px;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,.08);margin-bottom:25px}
+h2{margin-bottom:15px;color:#0d47a1}
+input,textarea,button{
+width:100%;padding:12px;margin-top:10px;
+border:1px solid #ccc;border-radius:8px;font-size:16px
+}
+textarea{height:120px;resize:vertical}
+button{
+background:#0d47a1;color:#fff;border:none;
+font-weight:bold;cursor:pointer
+}
+button:hover{background:#08306b}
+#status{
+margin-top:15px;padding:12px;border-radius:8px;
+font-weight:bold;display:none
+}
+.ok{background:#d4edda;color:#155724}
+.err{background:#f8d7da;color:#721c24}
+footer{
+background:#0d47a1;color:#fff;text-align:center;
+padding:18px;margin-top:40px
+}
+.small{font-size:14px;color:#666;margin-top:10px}
+</style>
+</head>
+<body>
+
+<header>Portal Prefeitura Vila Bela MT</header>
+
+<nav>
+<a href="#serv">Serviços</a>
+<a href="#not">Notícias</a>
+<a href="#trans">Transparência</a>
+<a href="#cont">Contato</a>
+</nav>
+
+<section>
+
+<div class="card" id="serv">
+<h2>Serviços</h2>
+<p>IPTU, protocolos, atendimento e solicitações digitais.</p>
+</div>
+
+<div class="card" id="not">
+<h2>Notícias</h2>
+<p>Comunicados oficiais e ações municipais.</p>
+</div>
+
+<div class="card" id="trans">
+<h2>Transparência</h2>
+<p>Relatórios públicos e prestação de contas.</p>
+</div>
+
+<div class="card" id="cont">
+<h2>Fale Conosco</h2>
+
+<form id="formContato">
+<input type="text" id="nome" placeholder="Seu nome" required>
+<input type="email" id="email" placeholder="Seu e-mail" required>
+<textarea id="mensagem" placeholder="Sua mensagem" required></textarea>
+<button type="submit" id="btnEnviar">Enviar</button>
+</form>
+
+<div id="status"></div>
+<div class="small">Contato oficial: antoniodecioferreiracoelho@gmail.com</div>
+
+</div>
+
+</section>
+
+<footer>© 2026 Prefeitura Vila Bela MT</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+getFirestore,
+collection,
+addDoc,
+serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyBSXXHj9RVPUA73fBIyS91c-PXoRhnwZT0",
+authDomain: "portal-vilabela-mt-3e11e.firebaseapp.com",
+projectId: "portal-vilabela-mt-3e11e",
+storageBucket: "portal-vilabela-mt-3e11e.firebasestorage.app",
+messagingSenderId: "953992010471",
+appId: "1:953992010471:web:8a1980a0e7bd19b2092042"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const form = document.getElementById("formContato");
+const btn = document.getElementById("btnEnviar");
+const statusBox = document.getElementById("status");
+
+function showMsg(msg, ok=true){
+statusBox.style.display="block";
+statusBox.className = ok ? "ok" : "err";
+statusBox.innerText = msg;
+}
+
+form.addEventListener("submit", async (e)=>{
+e.preventDefault();
+
+btn.disabled = true;
+btn.innerText = "Enviando...";
+showMsg("Conectando ao banco de dados...", true);
+
+try{
+const nome = document.getElementById("nome").value.trim();
+const email = document.getElementById("email").value.trim();
+const mensagem = document.getElementById("mensagem").value.trim();
+
+if(!nome || !email || !mensagem){
+throw new Error("Preencha todos os campos.");
+}
+
+const timeout = new Promise((_, reject)=>
+setTimeout(()=>reject(new Error("Tempo de resposta excedido.")),15000)
+);
+
+const envio = addDoc(collection(db,"contatos"),{
+nome,
+email,
+mensagem,
+status:"novo",
+createdAt: serverTimestamp()
+});
+
+await Promise.race([envio, timeout]);
+
+showMsg("Mensagem enviada com sucesso!", true);
+form.reset();
+
+}catch(err){
+console.error(err);
+showMsg("Erro ao enviar: " + err.message, false);
+}finally{
+btn.disabled = false;
+btn.innerText = "Enviar";
+}
+});
+</script>
+
+</body>
+</html>
