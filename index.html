@@ -1,134 +1,12 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Portal Prefeitura Vila Bela MT</title>
-
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:Arial,sans-serif;background:#f5f7fa;color:#222}
-header{
-position:fixed;top:0;left:0;width:100%;
-background:#0d47a1;color:#fff;padding:15px;
-z-index:999;text-align:center;font-size:22px;font-weight:bold
-}
-nav{
-margin-top:70px;
-background:#1565c0;
-padding:10px;
-text-align:center;
-position:sticky;top:60px;z-index:998
-}
-nav a{
-color:#fff;text-decoration:none;margin:0 10px;font-weight:bold
-}
-section{
-padding:50px 20px;
-max-width:900px;
-margin:auto
-}
-h2{margin-bottom:15px;color:#0d47a1}
-.card{
-background:#fff;
-padding:20px;
-border-radius:12px;
-box-shadow:0 4px 12px rgba(0,0,0,.08);
-margin-bottom:20px
-}
-input,textarea,button{
-width:100%;
-padding:12px;
-margin:8px 0;
-border:1px solid #ccc;
-border-radius:8px;
-font-size:16px
-}
-button{
-background:#0d47a1;
-color:#fff;
-font-weight:bold;
-border:none;
-cursor:pointer
-}
-button:hover{background:#1565c0}
-#status{
-margin-top:10px;
-font-weight:bold
-}
-footer{
-text-align:center;
-padding:30px;
-background:#0d47a1;
-color:#fff;
-margin-top:40px
-}
-</style>
-</head>
-<body>
-
-<header>Portal Prefeitura Vila Bela MT</header>
-
-<nav>
-<a href="#serv">Serviços</a>
-<a href="#not">Notícias</a>
-<a href="#trans">Transparência</a>
-<a href="#cont">Contato</a>
-</nav>
-
-<section id="serv">
-<div class="card">
-<h2>Serviços</h2>
-<p>IPTU, protocolos, atendimento e solicitações digitais.</p>
-</div>
-</section>
-
-<section id="not">
-<div class="card">
-<h2>Notícias</h2>
-<p>Comunicados oficiais e ações municipais.</p>
-</div>
-</section>
-
-<section id="trans">
-<div class="card">
-<h2>Transparência</h2>
-<p>Relatórios públicos e prestação de contas.</p>
-</div>
-</section>
-
-<section id="cont">
-<div class="card">
-<h2>Fale Conosco</h2>
-
-<form id="formContato">
-<input type="text" id="nome" placeholder="Seu nome" required>
-<input type="email" id="email" placeholder="Seu e-mail" required>
-<textarea id="mensagem" rows="5" placeholder="Digite sua mensagem" required></textarea>
-<button type="submit">Enviar</button>
-</form>
-
-<div id="status"></div>
-
-<p style="margin-top:15px">
-Contato oficial: antoniodecioferreiracoelho@gmail.com
-</p>
-</div>
-</section>
-
-<footer>
-© 2026 Prefeitura Vila Bela MT
-</footer>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-getFirestore,
-collection,
-addDoc,
-serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, serverTimestamp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+const status = document.getElementById("status");
+status.innerHTML = "Carregando Firebase...";
+
+try{
 const firebaseConfig = {
 apiKey: "AIzaSyBSXXHj9RVPUA73fBIyS91c-PXoRhnwZT0",
 authDomain: "portal-vilabela-mt-3e11e.firebaseapp.com",
@@ -141,33 +19,28 @@ appId: "1:953992010471:web:8a1980a0e7bd19b2092042"
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const form = document.getElementById("formContato");
-const status = document.getElementById("status");
+status.innerHTML = "Firebase conectado.";
 
-form.addEventListener("submit", async (e)=>{
+document.getElementById("formContato").addEventListener("submit", async(e)=>{
 e.preventDefault();
-
 status.innerHTML="Enviando...";
 
 try{
 await addDoc(collection(db,"contatos"),{
-nome: document.getElementById("nome").value,
-email: document.getElementById("email").value,
-mensagem: document.getElementById("mensagem").value,
+nome:nome.value,
+email:email.value,
+mensagem:mensagem.value,
 status:"novo",
-data: serverTimestamp()
+data:serverTimestamp()
 });
-
-status.style.color="green";
-status.innerHTML="Mensagem enviada com sucesso!";
-form.reset();
-
-}catch(err){
-status.style.color="red";
-status.innerHTML="Erro ao enviar: "+err.message;
+status.innerHTML="✅ Mensagem enviada!";
+e.target.reset();
+}catch(erro){
+status.innerHTML="❌ "+erro.message;
 }
 });
-</script>
 
-</body>
-</html>
+}catch(err){
+status.innerHTML="Erro inicial: "+err.message;
+}
+</script>
